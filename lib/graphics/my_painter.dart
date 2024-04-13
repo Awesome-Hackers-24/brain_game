@@ -82,7 +82,7 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
         painter: MyPainterCanvas(rgn, particles),
         child: Column(
           children: [
-            Text("HELLO: ${text.toString()}"),
+            debugData(),
             const SizedBox(height: 50),
             Slider(
               value: radiusFactor,
@@ -99,6 +99,31 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
         ),
       ),
     );
+  }
+
+  Row debugData() {
+    return Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Obx(() {
+                List<Widget> posWidgets = [];
+                dataController.data.forEach((key, value) {
+                  if (key.startsWith('pos')) {
+                    posWidgets.add(
+                      Text('$key: ${value.toString()}'),
+                    );
+                  }
+                });
+
+                return SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: posWidgets,
+                  ),
+                );
+              }),
+            ],
+          );
   }
 
   void updateBlobField(BlobBuilder blobBuilder) {
