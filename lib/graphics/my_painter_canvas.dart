@@ -8,7 +8,9 @@ Offset polarToCartesian(double speed, double theta) {
 }
 
 class MyPainterCanvas extends CustomPainter {
-  MyPainterCanvas(this.rdn, this.particles);
+  double animValue;
+
+  MyPainterCanvas(this.rdn, this.particles, this.animValue);
 
   List<Particle> particles;
   Random rdn;

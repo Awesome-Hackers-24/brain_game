@@ -11,18 +11,31 @@ class MyPainter extends StatefulWidget {
   State<MyPainter> createState() => _MyPainterState();
 }
 
-class _MyPainterState extends State<MyPainter> {
+class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMixin {
   late List<Particle> particles;
+  late Animation<double> animation;
+  late AnimationController controller;
 
   // List.generate(10, (index) => Particle());
   Random rgn = Random(DateTime.now().millisecondsSinceEpoch);
-  double maxRadius = 6;
-  double maxSpeed = 0.2;
-  double maxTheta = 2 * pi;
 
   @override
   void initState() {
     super.initState();
+    controller = AnimationController(vsync: this, duration: Duration(seconds: 10));
+    animation = Tween<double>(begin: 0, end: 300).animate(controller)
+      ..addListener(() {
+        setState(() {});
+      })
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          controller.repeat();
+        } else if (status == AnimationStatus.dismissed) {
+          controller.forward();
+        }
+      });
+    controller.forward();
+
     particles = List.generate(10, (index) {
       Particle p = Particle();
       p.color = getRandomColor(rgn);
@@ -33,6 +46,16 @@ class _MyPainterState extends State<MyPainter> {
       return p;
     });
   }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  double maxRadius = 6;
+  double maxSpeed = 0.2;
+  double maxTheta = 2 * pi;
 
   Color getRandomColor(Random rgn) {
     var a = rgn.nextInt(255);
@@ -51,7 +74,7 @@ class _MyPainterState extends State<MyPainter> {
       //   title: Text("Brain Game"),
       // ),
       body: CustomPaint(
-        painter: MyPainterCanvas(rgn, particles),
+        painter: MyPainterCanvas(rgn, particles, animation.value),
         child: Container(
             // color: Colors.deepOrangeAccent,
             ),
