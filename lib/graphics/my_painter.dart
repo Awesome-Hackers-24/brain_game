@@ -61,9 +61,34 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
 
   void handleDataChange(Map<String, dynamic> data) {
     setState(() {
-      text = dataController.data["pos1"];
+      // radiusFactor = mapRange(data['pos1'], -6212343, -337291, 1, 10);
+      radiusFactor = normalize(data['pos1'], data['pos2'], data['pos3']).toDouble();
     });
   }
+
+  int normalize(double pos1, double pos2, double pos3) {
+    double p1 = (pos1 / 10000).abs();
+    double p2 = (pos2 / 10000).abs();
+    double p3 = (pos3 / 10000).abs();
+
+    int result;
+    if (p1 > 470) {
+      //concentration
+      result = (p1 % 10 - p1 ~/ 100).toInt().abs();
+      print("Concentration: $result");
+    } else if (p2 > 590 && p3 > 550) {
+      result = (p2 ~/ 100 + p3 % 100).toInt().abs();
+      print("Relax: $result");
+    } else {
+      result = (p2 ~/ 100).abs();
+      print("Default: $result");
+    }
+    return result.abs();
+  }
+
+  // double mapRange(double value, double fromMin, double fromMax, double toMin, double toMax) {
+  //   return (value - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin;
+  // }
 
   @override
   void dispose() {
@@ -86,7 +111,7 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
             const SizedBox(height: 50),
             Slider(
               value: radiusFactor,
-              min: 1,
+              min: 0,
               max: 10,
               onChanged: (v) {
                 setState(() {
@@ -103,27 +128,27 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
 
   Row debugData() {
     return Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Obx(() {
-                List<Widget> posWidgets = [];
-                dataController.data.forEach((key, value) {
-                  if (key.startsWith('pos')) {
-                    posWidgets.add(
-                      Text('$key: ${value.toString()}'),
-                    );
-                  }
-                });
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Obx(() {
+          List<Widget> posWidgets = [];
+          dataController.data.forEach((key, value) {
+            if (key.startsWith('pos')) {
+              posWidgets.add(
+                Text('$key: ${value.toString()}'),
+              );
+            }
+          });
 
-                return SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: posWidgets,
-                  ),
-                );
-              }),
-            ],
+          return SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: posWidgets,
+            ),
           );
+        }),
+      ],
+    );
   }
 
   void updateBlobField(BlobBuilder blobBuilder) {
