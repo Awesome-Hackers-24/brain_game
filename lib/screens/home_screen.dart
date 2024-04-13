@@ -7,8 +7,27 @@ class HomeScreen extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      return Text(controller.text.value);
-    });
+    return Scaffold(
+      appBar: AppBar(title: Text("Sensor Data")),
+      body: Center(
+        child: Obx(() {
+          List<Widget> posWidgets = [];
+          controller.data.forEach((key, value) {
+            if (key.startsWith('pos')) {
+              posWidgets.add(
+                Text('$key: ${value.toString()}'),
+              );
+            }
+          });
+
+          return SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: posWidgets,
+            ),
+          );
+        }),
+      ),
+    );
   }
 }

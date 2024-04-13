@@ -4,16 +4,16 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SupabaseService extends GetxService {
   final SupabaseClient supabase = Get.find<SupabaseClient>();
 
-  void subscribe(void Function(String) callback) {
+  void subscribe(void Function(Map<String, dynamic>) callback) {
     supabase
-        .channel('public:Test')
+        .channel('public:sensor_data')
         .onPostgresChanges(
             event: PostgresChangeEvent.all,
             schema: 'public',
-            table: 'Test',
+            table: 'sensor_data',
             callback: (payload) {
               print('Change received: ${payload.toString()}');
-              callback(payload.newRecord["test"]);
+              callback(payload.newRecord);
             })
         .subscribe();
   }
