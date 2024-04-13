@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:brain_game/graphics/blob_builder.dart';
 import 'package:brain_game/graphics/my_painter_canvas.dart';
 import 'package:brain_game/graphics/particle.dart';
+import 'package:brain_game/screens/home_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class MyPainter extends StatefulWidget {
   const MyPainter({super.key});
@@ -25,6 +27,9 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
   double t = 0;
   double dt = 0.01;
   double radiusFactor = 7;
+  double text = 1234;
+
+  final HomeController dataController = Get.find<HomeController>();
 
   @override
   void initState() {
@@ -51,6 +56,13 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
         }
       });
     controller.forward();
+    ever(dataController.data, handleDataChange);
+  }
+
+  void handleDataChange(Map<String, dynamic> data) {
+    setState(() {
+      text = dataController.data["pos1"];
+    });
   }
 
   @override
@@ -70,6 +82,7 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
         painter: MyPainterCanvas(rgn, particles),
         child: Column(
           children: [
+            Text("HELLO: ${text.toString()}"),
             const SizedBox(height: 50),
             Slider(
               value: radiusFactor,
@@ -80,7 +93,7 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
                   radiusFactor = v;
                 });
               },
-            )
+            ),
           ],
           // color: Colors.deepOrangeAccent,
         ),
