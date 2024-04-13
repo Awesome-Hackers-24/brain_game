@@ -14,10 +14,12 @@ class MyPainter extends StatefulWidget {
   State<MyPainter> createState() => _MyPainterState();
 }
 
-class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMixin {
+class _MyPainterState extends State<MyPainter> with TickerProviderStateMixin {
   List<Particle> particles = <Particle>[];
   late Animation<double> animation;
   late AnimationController controller;
+  late AnimationController radiusController; // Controller for radiusFactor
+  late Animation<double> radiusAnimation; // Animation for radiusFactor
   Random rgn = Random(DateTime.now().millisecondsSinceEpoch);
 
   int particleCount = 70;
@@ -36,6 +38,7 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
     super.initState();
     BlobBuilder blobBuilder = BlobBuilder(particles, rgn);
 
+    // Main animation controller for the blob
     controller = AnimationController(vsync: this, duration: Duration(seconds: 10));
     animation = Tween<double>(begin: 0, end: 300).animate(controller)
       ..addListener(() {
@@ -44,7 +47,6 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
         }
         setState(() {
           t += dt;
-          // radiusFactor = mapRange(sin(t), -1, 1, 2, 10);
           updateBlobField(blobBuilder);
         });
       })
@@ -56,53 +58,52 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
         }
       });
     controller.forward();
+
+    // Animation controller for smooth transitions of radiusFactor
+    radiusController = AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+    radiusAnimation = Tween<double>(begin: radiusFactor, end: radiusFactor).animate(radiusController)
+      ..addListener(() {
+        setState(() {
+          radiusFactor = radiusAnimation.value;
+        });
+      });
+
     ever(dataController.data, handleDataChange);
   }
 
   void handleDataChange(Map<String, dynamic> data) {
-    setState(() {
-      // radiusFactor = mapRange(data['pos1'], -6212343, -337291, 1, 10);
-      radiusFactor = normalize(data['pos1'], data['pos2'], data['pos3']).toDouble();
-    });
+    double newRadiusFactor = normalize(data['pos1'], data['pos2'], data['pos3']).toDouble();
+    radiusAnimation = Tween<double>(begin: radiusFactor, end: newRadiusFactor).animate(CurvedAnimation(parent: radiusController, curve: Curves.easeInOut));
+    radiusController
+      ..reset()
+      ..forward();
   }
 
   int normalize(double pos1, double pos2, double pos3) {
     double p1 = (pos1 / 10000).abs();
     double p2 = (pos2 / 10000).abs();
     double p3 = (pos3 / 10000).abs();
-
     int result;
     if (p1 > 470) {
-      //concentration
       result = (p1 % 10 - p1 ~/ 100).toInt().abs();
-      print("Concentration: $result");
     } else if (p2 > 590 && p3 > 550) {
       result = (p2 ~/ 100 + p3 % 100).toInt().abs();
-      print("Relax: $result");
     } else {
       result = (p2 ~/ 100).abs();
-      print("Default: $result");
     }
     return result.abs();
   }
 
-  // double mapRange(double value, double fromMin, double fromMax, double toMin, double toMax) {
-  //   return (value - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin;
-  // }
-
   @override
   void dispose() {
     controller.dispose();
+    radiusController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      //   title: Text("Brain Game"),
-      // ),
       body: CustomPaint(
         painter: MyPainterCanvas(rgn, particles),
         child: Column(
@@ -120,7 +121,6 @@ class _MyPainterState extends State<MyPainter> with SingleTickerProviderStateMix
               },
             ),
           ],
-          // color: Colors.deepOrangeAccent,
         ),
       ),
     );
