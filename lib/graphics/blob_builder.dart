@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 
 class BlobBuilder {
   List<Particle> particles = <Particle>[];
-  Random rgn;
+  Random rgn = Random(DateTime.now().millisecondsSinceEpoch);
 
-  BlobBuilder(this.particles, this.rgn);
+  BlobBuilder();
 
   void createBlobField(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -18,7 +18,7 @@ class BlobBuilder {
     //radius of the blob
     final r = size.width / n;
     //alpha blending value
-    final a = 0.2;
+    final a = 0.6;
     blobField(r, n, a, o);
   }
 

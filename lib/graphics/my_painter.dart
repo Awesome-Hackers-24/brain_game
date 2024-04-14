@@ -1,8 +1,5 @@
-import 'dart:math';
-
 import 'package:brain_game/graphics/blob_builder.dart';
 import 'package:brain_game/graphics/my_painter_canvas.dart';
-import 'package:brain_game/graphics/particle.dart';
 import 'package:brain_game/screens/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,28 +12,25 @@ class MyPainter extends StatefulWidget {
 }
 
 class _MyPainterState extends State<MyPainter> with TickerProviderStateMixin {
-  List<Particle> particles = <Particle>[];
   late Animation<double> animation;
   late AnimationController controller;
   late AnimationController radiusController; // Controller for radiusFactor
   late Animation<double> radiusAnimation; // Animation for radiusFactor
-  Random rgn = Random(DateTime.now().millisecondsSinceEpoch);
 
-  int particleCount = 70;
-  double maxRadius = 6;
-  double maxSpeed = 0.2;
-  double maxTheta = 2 * pi;
+  // int particleCount = 0;
+  // double maxRadius = 6;
+  // double maxSpeed = 0.2;
+  // double maxTheta = 2 * pi;
   double t = 0;
   double dt = 0.01;
-  double radiusFactor = 7;
-  double text = 1234;
+  double radiusFactor = 7; //done
+  BlobBuilder blobBuilder = BlobBuilder();
 
   final HomeController dataController = Get.find<HomeController>();
 
   @override
   void initState() {
     super.initState();
-    BlobBuilder blobBuilder = BlobBuilder(particles, rgn);
 
     // Main animation controller for the blob
     controller = AnimationController(vsync: this, duration: Duration(seconds: 10));
@@ -84,15 +78,36 @@ class _MyPainterState extends State<MyPainter> with TickerProviderStateMixin {
     double p2 = (pos2 / 10000).abs();
     double p3 = (pos3 / 10000).abs();
     int result;
-    if (p1 > 470) {
+    if (p1 > 470 || (p1 < 17 && p1 > 12)) {
       result = (p1 % 10 - p1 ~/ 100).toInt().abs();
+      print("Concentration $result");
     } else if (p2 > 590 && p3 > 550) {
       result = (p2 ~/ 100 + p3 % 100).toInt().abs();
+      print("Relaxation $result");
     } else {
       result = (p2 ~/ 100).abs();
+      print("Default $result");
     }
     return result.abs();
   }
+
+  // int normalize(double pos1, double pos2, double pos3) {
+  //   double p1 = (pos1 / 10000).abs();
+  //   double p2 = (pos2 / 10000).abs();
+  //   double p3 = (pos3 / 10000).abs();
+  //   int result;
+  //   if (p1 > 470) {
+  //     result = (p1 % 10 - p1 ~/ 100).toInt().abs();
+  //     print("Concentration $result");
+  //   } else if (p2 > 590 && p3 > 550) {
+  //     result = (p2 ~/ 100 + p3 % 100).toInt().abs();
+  //     print("Relaxation $result");
+  //   } else {
+  //     result = (p2 ~/ 100).abs();
+  //     print("Default $result");
+  //   }
+  //   return result.abs();
+  // }
 
   @override
   void dispose() {
@@ -105,7 +120,7 @@ class _MyPainterState extends State<MyPainter> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomPaint(
-        painter: MyPainterCanvas(rgn, particles),
+        painter: MyPainterCanvas(blobBuilder.rgn, blobBuilder.particles),
         child: Column(
           children: [
             debugData(),
